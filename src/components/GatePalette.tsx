@@ -27,6 +27,6 @@ export const GatePalette: React.FC<GatePaletteProps> = ({ onAdd }) => (
     <div className="grid grid-cols-5 gap-2">
       {GATE_LIST.map(g => <DraggableGate key={g} type={g} onAdd={onAdd} />)}
     </div>
-    <p className="text-[10px] text-gray-400">Drag into timeline or double-click to add.</p>
+    <p className="text-xs text-gray-500 italic text-left mt-2">Drag into timeline or double-click to add.</p>
   </div>
 );

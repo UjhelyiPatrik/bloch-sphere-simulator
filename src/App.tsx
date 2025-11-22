@@ -5,7 +5,7 @@ import { BlochSphere } from './components/BlochSphere';
 import { GatePalette } from './components/GatePalette';
 import { Timeline } from './components/Timeline';
 import { Controls } from './components/Controls';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { evaluate, complex, Complex } from 'mathjs';
 
@@ -17,6 +17,7 @@ export default function App() {
   const [paramErrors, setParamErrors] = useState<Record<string, boolean>>({});
   const [gates, setGates] = useState<GateCommand[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const parseExpr = (expr: string): Complex => {
     try {
@@ -77,8 +78,13 @@ export default function App() {
     })
   );
 
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(String(event.active.id));
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+    setActiveId(null);
     if (!over || active.id === over.id) return;
     if (String(active.id).startsWith('palette-') && over.id === 'timeline-drop') {
       // add new gate
@@ -98,20 +104,33 @@ export default function App() {
     <div className="h-full flex flex-col">
       <header className="p-2 bg-gray-800 flex items-center gap-4 text-sm">
         <span className="font-semibold text-neon">Bloch Sphere Simulator</span>
-        <div className="flex items-center gap-2">
-          <label htmlFor="alpha" className="sr-only">alpha amplitude</label>
-          <input id="alpha" value={alphaExpr} onChange={e=>setAlphaExpr(e.target.value)} placeholder="alpha" className={`bg-gray-900 border ${ampErrors.alpha? 'border-red-500':'border-gray-600'} rounded px-1 py-0.5 w-24`} />
-          <label htmlFor="beta" className="sr-only">beta amplitude</label>
-          <input id="beta" value={betaExpr} onChange={e=>setBetaExpr(e.target.value)} placeholder="beta" className={`bg-gray-900 border ${ampErrors.beta? 'border-red-500':'border-gray-600'} rounded px-1 py-0.5 w-24`} />
-        </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/3 bg-gray-900 overflow-y-auto border-r border-gray-700">
-          <GatePalette onAdd={addGate} />
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <GatePalette onAdd={addGate} />
             <SortableContext items={gates.map(g=>g.id)}>
-              <Timeline gates={gates} activeIndex={stepIndex-1} onSelect={onSelect} onParamChange={onParamChange} onRemove={removeGate} paramErrors={paramErrors} />
+              <Timeline 
+                gates={gates} 
+                activeIndex={stepIndex-1} 
+                onSelect={onSelect} 
+                onParamChange={onParamChange} 
+                onRemove={removeGate} 
+                paramErrors={paramErrors}
+                alpha={alphaExpr}
+                setAlpha={setAlphaExpr}
+                beta={betaExpr}
+                setBeta={setBetaExpr}
+                ampErrors={ampErrors}
+              />
             </SortableContext>
+            <DragOverlay>
+              {activeId?.startsWith('palette-') ? (
+                <button className="px-2 py-1 rounded bg-gray-700 text-xs border border-neon shadow-lg cursor-grabbing text-gray-100">
+                  {activeId.replace('palette-', '')}
+                </button>
+              ) : null}
+            </DragOverlay>
           </DndContext>
           <Controls
             canPrev={stepIndex>0}
