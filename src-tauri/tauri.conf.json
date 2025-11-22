@@ -1,0 +1,28 @@
+{
+  "package": {
+    "productName": "Bloch Sphere Simulator",
+    "version": "0.1.0"
+  },
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:5173",
+    "distDir": "../dist"
+  },
+  "tauri": {
+    "allowlist": {
+      "shell": {
+        "all": true
+      }
+    },
+    "windows": [
+      {
+        "title": "Bloch Sphere Simulator",
+        "width": 1200,
+        "height": 800,
+        "resizable": true
+      }
+    ],
+    "security": { "csp": null }
+  }
+}
