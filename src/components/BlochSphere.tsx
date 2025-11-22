@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text, Line } from '@react-three/drei';
+import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import { blochVector } from '../quantum/engine';
 import { ComplexVector } from '../quantum/types';
 import * as THREE from 'three';
@@ -39,12 +39,12 @@ export const BlochSphere: React.FC<BlochSphereProps> = ({ current, ghosts }) => 
       <Line points={[[0,0,-1],[0,0,1]]} color="white" lineWidth={1} />
 
       {/* Labels */}
-      <Text position={[0,1.15,0]} fontSize={0.12}>|0⟩</Text>
-      <Text position={[0,-1.2,0]} fontSize={0.12}>|1⟩</Text>
-      <Text position={[1.15,0,0]} fontSize={0.12}>|+⟩</Text>
-      <Text position={[-1.2,0,0]} fontSize={0.12}>|-⟩</Text>
-      <Text position={[0,0,1.15]} fontSize={0.12}>|+i⟩</Text>
-      <Text position={[0,0,-1.2]} fontSize={0.12}>|-i⟩</Text>
+      <Billboard position={[0,1.15,0]}><Text fontSize={0.12}>|0⟩</Text></Billboard>
+      <Billboard position={[0,-1.2,0]}><Text fontSize={0.12}>|1⟩</Text></Billboard>
+      <Billboard position={[1.15,0,0]}><Text fontSize={0.12}>|+⟩</Text></Billboard>
+      <Billboard position={[-1.2,0,0]}><Text fontSize={0.12}>|-⟩</Text></Billboard>
+      <Billboard position={[0,0,1.15]}><Text fontSize={0.12}>|+i⟩</Text></Billboard>
+      <Billboard position={[0,0,-1.2]}><Text fontSize={0.12}>|-i⟩</Text></Billboard>
 
       {ghostVecs.map((v) => (
         <Arrow key={`${v.x.toFixed(3)}-${v.y.toFixed(3)}-${v.z.toFixed(3)}`} vec={v} color="#00b4ff" opacity={0.3} />
