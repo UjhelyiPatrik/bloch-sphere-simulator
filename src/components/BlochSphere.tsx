@@ -43,8 +43,8 @@ export const BlochSphere: React.FC<BlochSphereProps> = ({ current, ghosts }) => 
       <Billboard position={[0,-1.2,0]}><Text fontSize={0.12}>|1⟩</Text></Billboard>
       <Billboard position={[1.15,0,0]}><Text fontSize={0.12}>|+⟩</Text></Billboard>
       <Billboard position={[-1.2,0,0]}><Text fontSize={0.12}>|-⟩</Text></Billboard>
-      <Billboard position={[0,0,1.15]}><Text fontSize={0.12}>|+i⟩</Text></Billboard>
-      <Billboard position={[0,0,-1.2]}><Text fontSize={0.12}>|-i⟩</Text></Billboard>
+      <Billboard position={[0,0,1.15]}><Text fontSize={0.12}>|-i⟩</Text></Billboard>
+      <Billboard position={[0,0,-1.2]}><Text fontSize={0.12}>|+i⟩</Text></Billboard>
 
       {ghostVecs.map((v) => (
         <Arrow key={`${v.x.toFixed(3)}-${v.y.toFixed(3)}-${v.z.toFixed(3)}`} vec={v} color="#00b4ff" opacity={0.3} />
