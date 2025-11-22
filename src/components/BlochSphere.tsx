@@ -12,7 +12,8 @@ interface BlochSphereProps {
 
 interface ArrowProps { vec: {x:number;y:number;z:number}; color: string; opacity?: number }
 const Arrow: React.FC<ArrowProps> = ({ vec, color, opacity=1 }) => {
-  const dir = new THREE.Vector3(vec.x, vec.y, vec.z).normalize();
+  // Map Bloch coordinates to Three.js: x->x, z->y, -y->z (to correct for handedness/code inversion)
+  const dir = new THREE.Vector3(vec.x, vec.z, -vec.y).normalize();
   const length = 1;
   const headLength = 0.15;
   const headWidth = 0.08;
@@ -42,11 +43,13 @@ export const BlochSphere: React.FC<BlochSphereProps> = ({ current, ghosts }) => 
       <Text position={[0,-1.2,0]} fontSize={0.12}>|1⟩</Text>
       <Text position={[1.15,0,0]} fontSize={0.12}>|+⟩</Text>
       <Text position={[-1.2,0,0]} fontSize={0.12}>|-⟩</Text>
+      <Text position={[0,0,1.15]} fontSize={0.12}>|+i⟩</Text>
+      <Text position={[0,0,-1.2]} fontSize={0.12}>|-i⟩</Text>
 
       {ghostVecs.map((v) => (
         <Arrow key={`${v.x.toFixed(3)}-${v.y.toFixed(3)}-${v.z.toFixed(3)}`} vec={v} color="#00b4ff" opacity={0.3} />
       ))}
-      <Arrow vec={currentVec} color="#00b4ff" />
+      <Arrow vec={currentVec} color="#ff0000" />
       <OrbitControls />
     </Canvas>
   );
