@@ -55,7 +55,6 @@ export default function App() {
 
   function addGate(type: GateType) {
     setGates(g => [...g, { id: uuid(), type }]);
-    setStepIndex(0);
   }
   function onParamChange(id: string, value: string) {
     setGates(g => g.map(x => x.id === id ? { ...x, params: value } : x));
@@ -66,7 +65,6 @@ export default function App() {
   }
   function removeGate(id: string) {
     setGates(g => g.filter(x => x.id !== id));
-    setStepIndex(0);
   }
   function onSelect(i: number) { setStepIndex(prev => prev === i + 1 ? 0 : i + 1); }
 
@@ -85,19 +83,47 @@ export default function App() {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveId(null);
-    if (!over || active.id === over.id) return;
-    if (String(active.id).startsWith('palette-') && over.id === 'timeline-drop') {
-      // add new gate
-      const type = String(active.id).replace('palette-','') as GateType;
-      addGate(type);
-      return;
+    if (!over) return;
+
+    const activeIdStr = String(active.id);
+    const isPaletteItem = activeIdStr.startsWith('palette-');
+    const currentGateId = stepIndex > 0 ? gates[stepIndex - 1].id : null;
+
+    let newGates = [...gates];
+
+    if (isPaletteItem) {
+      const type = activeIdStr.replace('palette-', '') as GateType;
+      const newGate = { id: uuid(), type };
+      
+      if (over.id === 'timeline-drop') {
+        newGates.push(newGate);
+      } else {
+        const overIndex = gates.findIndex(g => g.id === over.id);
+        if (overIndex !== -1) {
+          newGates.splice(overIndex, 0, newGate);
+        } else {
+          newGates.push(newGate);
+        }
+      }
+    } else {
+      if (active.id === over.id) return;
+      const oldIndex = gates.findIndex(g => g.id === active.id);
+      const newIndex = gates.findIndex(g => g.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        newGates = arrayMove(gates, oldIndex, newIndex);
+      } else {
+        return;
+      }
     }
-    setGates(items => {
-      const oldIndex = items.findIndex(i => i.id === active.id);
-      const newIndex = items.findIndex(i => i.id === over.id);
-      if (oldIndex === -1 || newIndex === -1) return items;
-      return arrayMove(items, oldIndex, newIndex);
-    });
+
+    setGates(newGates);
+
+    if (currentGateId) {
+      const newCurrentIndex = newGates.findIndex(g => g.id === currentGateId);
+      if (newCurrentIndex !== -1) {
+        setStepIndex(newCurrentIndex + 1);
+      }
+    }
   }
 
   return (
