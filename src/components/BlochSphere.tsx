@@ -26,11 +26,11 @@ export const BlochSphere: React.FC<BlochSphereProps> = ({ current, ghosts }) => 
   const ghostVecs = useMemo(() => ghosts.map(g => blochVector(g)), [ghosts]);
   return (
     <Canvas camera={{ position: [2,2,2], fov: 50 }}>
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={0.6} />
       <pointLight position={[5,5,5]} />
       <mesh>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshPhongMaterial color="#0d1b2a" transparent opacity={0.15} wireframe />
+        <sphereGeometry args={[1, 24, 24,]} />
+        <meshPhongMaterial color="#ffffff" transparent opacity={0.3} wireframe />
       </mesh>
       {/* Axes using Line helper */}
       <Line points={[[0,-1,0],[0,1,0]]} color="white" lineWidth={1} />

@@ -10,9 +10,10 @@ interface SortableGateProps {
   error?: boolean;
   onSelect: (index: number) => void;
   onParamChange: (id: string, value: string) => void;
+  onRemove: (id: string) => void;
 }
 
-export const SortableGate: React.FC<SortableGateProps> = ({ gate, index, active, error, onSelect, onParamChange }) => {
+export const SortableGate: React.FC<SortableGateProps> = ({ gate, index, active, error, onSelect, onParamChange, onRemove }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: gate.id });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -33,6 +34,7 @@ export const SortableGate: React.FC<SortableGateProps> = ({ gate, index, active,
           className={`bg-gray-900 border ${error? 'border-red-500 animate-pulse':'border-gray-600'} focus:border-neon rounded px-1 py-0.5 w-20 outline-none`}
         />
       )}
+      <button onPointerDown={e => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onRemove(gate.id); }} className="ml-auto text-red-500 hover:text-red-400 px-1 font-bold">✕</button>
     </li>
   );
 };

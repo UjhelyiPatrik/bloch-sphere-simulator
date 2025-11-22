@@ -14,7 +14,6 @@ function uuid() { return Math.random().toString(36).slice(2,9); }
 export default function App() {
   const [alphaExpr, setAlphaExpr] = useState('1');
   const [betaExpr, setBetaExpr] = useState('0');
-  const [ampErrors, setAmpErrors] = useState<{alpha?: boolean; beta?: boolean}>({});
   const [paramErrors, setParamErrors] = useState<Record<string, boolean>>({});
   const [gates, setGates] = useState<GateCommand[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
@@ -33,17 +32,20 @@ export default function App() {
     }
   };
 
-  const initialState: ComplexVector = useMemo(() => {
+  const { initialState, ampErrors } = useMemo(() => {
     const a = parseExpr(alphaExpr);
     const b = parseExpr(betaExpr);
     const aInvalid = Number.isNaN(a.re) || Number.isNaN(a.im);
     const bInvalid = Number.isNaN(b.re) || Number.isNaN(b.im);
-    setAmpErrors({ alpha: aInvalid, beta: bInvalid });
+    
     const aUse = aInvalid ? complex(1,0) : a;
     const bUse = bInvalid ? complex(0,0) : b;
     // Normalize
     const mag = Math.hypot(Math.hypot(aUse.re, aUse.im), Math.hypot(bUse.re, bUse.im)) || 1;
-    return [complex(aUse.re / mag, aUse.im / mag), complex(bUse.re / mag, bUse.im / mag)];
+    return {
+      initialState: [complex(aUse.re / mag, aUse.im / mag), complex(bUse.re / mag, bUse.im / mag)] as ComplexVector,
+      ampErrors: { alpha: aInvalid, beta: bInvalid }
+    };
   }, [alphaExpr, betaExpr]);
 
   const history = useMemo(() => computeHistory(initialState, gates).history, [initialState, gates]);
@@ -61,9 +63,19 @@ export default function App() {
     try { const v = evaluate(value); if (typeof v !== 'number') valid = false; } catch { valid = false; }
     setParamErrors(errs => ({ ...errs, [id]: !valid }));
   }
-  function onSelect(i: number) { setStepIndex(i+1); }
+  function removeGate(id: string) {
+    setGates(g => g.filter(x => x.id !== id));
+    setStepIndex(0);
+  }
+  function onSelect(i: number) { setStepIndex(prev => prev === i + 1 ? 0 : i + 1); }
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -98,7 +110,7 @@ export default function App() {
           <GatePalette onAdd={addGate} />
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={gates.map(g=>g.id)}>
-              <Timeline gates={gates} activeIndex={stepIndex-1} onSelect={onSelect} onParamChange={onParamChange} paramErrors={paramErrors} />
+              <Timeline gates={gates} activeIndex={stepIndex-1} onSelect={onSelect} onParamChange={onParamChange} onRemove={removeGate} paramErrors={paramErrors} />
             </SortableContext>
           </DndContext>
           <Controls
