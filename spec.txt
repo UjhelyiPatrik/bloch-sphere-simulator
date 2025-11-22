@@ -1,0 +1,131 @@
+PROJECT SPECIFICATION: Modern Bloch Sphere Simulator 
+Version: 1.0
+Date: 2025. 11. 22.
+
+
+
+ ----------------------------------------
+|       1. PROJECT OBJECTIVE	|
+ ----------------------------------------
+
+Create an interactive, browser‑based 3D Bloch sphere simulator capable
+of visualizing the state of a qubit, handling arbitrary initial states,
+and applying sequences of quantum gates (chaining). The software must
+have a modern, presentation‑quality interface suitable for educational
+purposes
+
+
+
+ ----------------------------------------
+|        2. TECHNOLOGY STACK	|
+ ----------------------------------------
+
+-   Core: React (TypeScript) – Strict typing for mathematical safety.
+-   Build Tool: Vite – Fast development and optimized production builds.
+-   Math Engine: math.js – Complex numbers and matrix operations
+    (precision) [cite: 17].
+-   3D Engine: Three.js + React-Three-Fiber (@react-three/drei) –
+    Declarative 3D.
+-   Styling: Tailwind CSS – Modern, responsive UI.
+-   State Management: React Context or Zustand (if needed).
+
+
+
+ -------------------------------------------------------------------
+|      3. FUNCTIONAL REQUIREMENTS (Backend/Logic)	|
+ -------------------------------------------------------------------
+
+The logic layer is responsible for performing accurate quantum‑state
+computations.
+
+3.1. Quantum State Management - Internal representation: Complex vector
+(2×1 matrix) |ψ⟩ = α|0⟩ + β|1⟩. - Conversion: Automatic conversion
+between vector representation and Bloch angles (θ, φ) for
+visualization. - Normalization: After every operation the state vector
+must be renormalized (unitary check).
+
+3.2. Quantum Gates (Gate Operations) [cite: 15, 16] - The system must
+support the following gates through matrix multiplication: - Basic
+gates: Pauli-X, Pauli-Y, Pauli-Z, Hadamard (H), S, T. - Parametric
+rotation gates: Rx(θ), Ry(θ), Rz(θ) – controlled via sliders. - Phase
+shift gate.
+
+3.3. Operation Chain (Gate Chaining) - The user must be able to define a
+sequence of gates (pipeline). - Gates can be executed immediately or
+sequentially. - “Step-by-step” mode: The chain’s effects can be applied
+one at a time.
+
+3.4. Arbitrary Initial State - Input fields for complex α and β
+values. - Alternative input: θ and φ sliders.
+
+3.5. Multiple State Visualization (Ghost States) - To satisfy the “Can
+it show multiple states at once?” requirement: - History Mode: Previous
+states (vectors before each gate application) remain faintly rendered
+(“ghost vectors”), visualizing the transformation path.
+
+
+
+ -------------------------------------------------------------------
+|     4. USER INTERFACE (UI/UX) REQUIREMENTS		|
+ -------------------------------------------------------------------
+
+The interface must be “creative and visually appealing”.
+
+4.1. Layout (Dashboard Design) - Left side: Control Panel. - Set initial
+state. - List of gates (buttons with icons or matrix tooltips). -
+Operation history log. - Right / Center: 3D Bloch sphere canvas. - Large
+or dominant viewport.
+
+4.2. 3D Interactions (Three.js) - Sphere must be rotatable and zoomable
+(OrbitControls). - Axes (X, Y, Z) and poles (|0⟩, |1⟩) must be clearly
+labeled. - State vector (arrow) should move with animated transitions,
+not jumps.
+
+4.3. Visual Style - Dark mode (modern scientific software vibe). -
+Neon/glow effects on the quantum vector. - Transparent (wireframe or
+glass-like) sphere shell so “rear” vectors remain visible.
+
+
+
+ ------------------------------------------------------------
+|      5. ARCHITECTURE AND DESIGN PATTERNS	|
+ ------------------------------------------------------------
+
+Ensures readability and extensibility.
+
+5.1. Command Pattern - Gate applications implemented as Command
+objects. - Interface: execute(state), undo(state). - Enables easy Undo
+functionality and operation log management.
+
+5.2. Separated Presentation (MVVM-like) - QuantumEngine.ts: Pure
+TypeScript, no UI dependencies (math only). - BlochSphere.tsx: Rendering
+only (receives angles as props). - App.tsx: Controller tying logic to
+view.
+
+5.3. Singleton (optional) - Centralized management of constants and
+gate‑matrix definitions.
+
+
+
+ ------------------------------------------------------
+|      6. DOCUMENTATION REQUIREMENTS	|
+ ------------------------------------------------------
+
+During development, maintain Markdown files for final PDF generation: -
+List of libraries and versions (from package.json). - Short mathematical
+background (How does the program compute?). - User guide (How to add
+gates, apply rotations). - Installation/Execution guide.
+
+
+
+ ----------------------------------------
+|      7. DELIVERY / EXECUTION	|
+ ----------------------------------------
+
+-   The final product must run in a Windows browser “without
+    installation”.
+-   SOLUTION: Configure Vite build (base: './') so the generated dist
+    folder uses relative paths.
+-   Alternative: Deploy project to a public URL (Vercel/Netlify), as the
+    cleanest method of browser‑only execution with no installation.
+    Documentation must include source code link AND live demo link.
