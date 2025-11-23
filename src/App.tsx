@@ -5,7 +5,7 @@ import { BlochSphere } from './components/BlochSphere';
 import { GatePalette } from './components/GatePalette';
 import { Timeline } from './components/Timeline';
 import { Controls } from './components/Controls';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent, DragOverEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { evaluate, complex, Complex } from 'mathjs';
 
@@ -18,6 +18,8 @@ export default function App() {
   const [gates, setGates] = useState<GateCommand[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [insertionIndex, setInsertionIndex] = useState<number | null>(null);
+  const [showHistory, setShowHistory] = useState(true);
 
   const parseExpr = (expr: string): Complex => {
     try {
@@ -78,11 +80,50 @@ export default function App() {
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id));
+    setInsertionIndex(null);
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!over) {
+      setInsertionIndex(null);
+      return;
+    }
+
+    const activeIdStr = String(active.id);
+    if (activeIdStr.startsWith('palette-')) {
+      if (over.id === 'timeline-drop') {
+        setInsertionIndex(gates.length);
+        return;
+      }
+      const overIndex = gates.findIndex(g => g.id === over.id);
+      if (overIndex !== -1) {
+        // Calculate if we are above or below the center
+        const activeRect = active.rect.current.translated;
+        const overRect = over.rect;
+        
+        if (activeRect && overRect) {
+           const activeCenterY = activeRect.top + activeRect.height / 2;
+           const overCenterY = overRect.top + overRect.height / 2;
+           
+           if (activeCenterY < overCenterY) {
+              setInsertionIndex(overIndex);
+           } else {
+              setInsertionIndex(overIndex + 1);
+           }
+        } else {
+           setInsertionIndex(overIndex); // Fallback
+        }
+      }
+    } else {
+      setInsertionIndex(null);
+    }
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveId(null);
+    setInsertionIndex(null);
     if (!over) return;
 
     const activeIdStr = String(active.id);
@@ -100,7 +141,24 @@ export default function App() {
       } else {
         const overIndex = gates.findIndex(g => g.id === over.id);
         if (overIndex !== -1) {
-          newGates.splice(overIndex, 0, newGate);
+          // Use the calculated insertion index if available, otherwise fallback to overIndex
+          // But wait, handleDragOver logic for insertionIndex is visual.
+          // We should use the same logic here or rely on insertionIndex if we stored it?
+          // Storing insertionIndex in state is fine, but handleDragEnd might not have the latest if it updates fast?
+          // Actually, let's re-calculate or use the same logic.
+          
+          const activeRect = active.rect.current.translated;
+          const overRect = over.rect;
+          let insertAt = overIndex;
+
+          if (activeRect && overRect) {
+             const activeCenterY = activeRect.top + activeRect.height / 2;
+             const overCenterY = overRect.top + overRect.height / 2;
+             if (activeCenterY >= overCenterY) {
+                insertAt = overIndex + 1;
+             }
+          }
+          newGates.splice(insertAt, 0, newGate);
         } else {
           newGates.push(newGate);
         }
@@ -133,11 +191,12 @@ export default function App() {
       </header>
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/3 bg-gray-900 overflow-y-auto border-r border-gray-700">
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
             <GatePalette onAdd={addGate} />
             <SortableContext items={gates.map(g=>g.id)}>
               <Timeline 
                 gates={gates} 
+                history={history}
                 activeIndex={stepIndex-1} 
                 onSelect={onSelect} 
                 onParamChange={onParamChange} 
@@ -148,6 +207,9 @@ export default function App() {
                 beta={betaExpr}
                 setBeta={setBetaExpr}
                 ampErrors={ampErrors}
+                insertionIndex={insertionIndex}
+                showHistory={showHistory}
+                setShowHistory={setShowHistory}
               />
             </SortableContext>
             <DragOverlay>
@@ -168,7 +230,7 @@ export default function App() {
           />
         </div>
         <div className="flex-1 bg-black">
-          <BlochSphere current={current} ghosts={ghosts} />
+          <BlochSphere current={current} ghosts={showHistory ? ghosts : []} />
         </div>
       </div>
     </div>
