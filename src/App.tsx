@@ -185,52 +185,72 @@ export default function App() {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <header className="p-2 bg-gray-800 flex items-center gap-4 text-sm">
-        <span className="font-semibold text-neon">Bloch Sphere Simulator</span>
-      </header>
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/3 bg-gray-900 overflow-y-auto border-r border-gray-700">
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-            <GatePalette onAdd={addGate} />
-            <SortableContext items={gates.map(g=>g.id)}>
-              <Timeline 
-                gates={gates} 
-                history={history}
-                activeIndex={stepIndex-1} 
-                onSelect={onSelect} 
-                onParamChange={onParamChange} 
-                onRemove={removeGate} 
-                paramErrors={paramErrors}
-                alpha={alphaExpr}
-                setAlpha={setAlphaExpr}
-                beta={betaExpr}
-                setBeta={setBetaExpr}
-                ampErrors={ampErrors}
-                insertionIndex={insertionIndex}
-                showHistory={showHistory}
-                setShowHistory={setShowHistory}
-              />
-            </SortableContext>
-            <DragOverlay>
-              {activeId?.startsWith('palette-') ? (
-                <button className="px-2 py-1 rounded bg-gray-700 text-xs border border-neon shadow-lg cursor-grabbing text-gray-100">
-                  {activeId.replace('palette-', '')}
-                </button>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-          <Controls
-            canPrev={stepIndex>0}
-            canNext={stepIndex < history.length-1}
-            onPrev={()=>setStepIndex(i=>Math.max(0,i-1))}
-            onNext={()=>setStepIndex(i=>Math.min(history.length-1,i+1))}
-            onStart={()=>setStepIndex(0)}
-            onEnd={()=>setStepIndex(history.length-1)}
-          />
+    <div className="h-full flex flex-col bg-slate-950 text-slate-200 font-sans selection:bg-cyan-500/30">
+      <header className="px-4 py-3 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center gap-4 shadow-lg z-10">
+        <div className="relative w-8 h-8 flex items-center justify-center">
+          <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-md"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8 text-cyan-400 relative z-10">
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" className="opacity-20" />
+            <path d="M2.05 10.5a13.2 13.2 0 0 1 19.9 0" className="stroke-cyan-300" />
+            <path d="M2.05 13.5a13.2 13.2 0 0 0 19.9 0" className="stroke-cyan-300" />
+            <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" className="fill-cyan-100 stroke-cyan-200" />
+            <path d="M12 2v20" className="opacity-30" />
+            <path d="M2 12h20" className="opacity-30" />
+          </svg>
         </div>
-        <div className="flex-1 bg-black">
-          <BlochSphere current={current} ghosts={showHistory ? ghosts : []} />
+        <span className="font-bold text-lg tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+          BLOCH SPHERE SIMULATOR
+        </span>
+      </header>
+      <div className="flex flex-1 overflow-hidden relative">
+        <div className="w-[750px] flex flex-col bg-slate-900/90 border-r border-slate-800 backdrop-blur-sm shadow-2xl z-10">
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+              <div className="p-4 space-y-6">
+                <GatePalette onAdd={addGate} />
+                <SortableContext items={gates.map(g=>g.id)}>
+                  <Timeline 
+                    gates={gates} 
+                    history={history}
+                    activeIndex={stepIndex-1} 
+                    onSelect={onSelect} 
+                    onParamChange={onParamChange} 
+                    onRemove={removeGate} 
+                    paramErrors={paramErrors}
+                    alpha={alphaExpr}
+                    setAlpha={setAlphaExpr}
+                    beta={betaExpr}
+                    setBeta={setBetaExpr}
+                    ampErrors={ampErrors}
+                    insertionIndex={insertionIndex}
+                    showHistory={showHistory}
+                    setShowHistory={setShowHistory}
+                  />
+                </SortableContext>
+              </div>
+              <DragOverlay>
+                {activeId?.startsWith('palette-') ? (
+                  <div className="px-3 py-1.5 rounded-md bg-cyan-500/20 border border-cyan-400 text-cyan-100 text-xs font-bold shadow-[0_0_15px_rgba(34,211,238,0.5)] backdrop-blur-md">
+                    {activeId.replace('palette-', '')}
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          </div>
+          <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+            <Controls
+              canPrev={stepIndex>0}
+              canNext={stepIndex < history.length-1}
+              onPrev={()=>setStepIndex(i=>Math.max(0,i-1))}
+              onNext={()=>setStepIndex(i=>Math.min(history.length-1,i+1))}
+              onStart={()=>setStepIndex(0)}
+              onEnd={()=>setStepIndex(history.length-1)}
+            />
+          </div>
+        </div>
+        <div className="flex-1 bg-black relative">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900/20 via-black to-black pointer-events-none" />
+          <BlochSphere current={current} ghosts={showHistory ? ghosts : []} stepIndex={stepIndex} />
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ const formatLabel = (index: number, state: ComplexVector) => {
 interface BlochSphereProps {
   current: ComplexVector;
   ghosts: ComplexVector[]; // previous states
+  stepIndex: number;
 }
 
 interface ArrowProps { vec: {x:number;y:number;z:number}; color: string; opacity?: number; label?: string | number }
@@ -30,7 +31,7 @@ const Arrow: React.FC<ArrowProps> = ({ vec, color, opacity=1, label }) => {
       <primitive object={arrowHelper} />
       {label !== undefined && (
         <Billboard position={dir.clone().multiplyScalar(1.1)}>
-          <Text fontSize={0.1} color={color} outlineWidth={0.01} outlineColor="black">
+          <Text fontSize={0.06} color={color} outlineWidth={0.005} outlineColor="black">
             {label}
           </Text>
         </Billboard>
@@ -39,7 +40,7 @@ const Arrow: React.FC<ArrowProps> = ({ vec, color, opacity=1, label }) => {
   );
 };
 
-export const BlochSphere: React.FC<BlochSphereProps> = ({ current, ghosts }) => {
+export const BlochSphere: React.FC<BlochSphereProps> = ({ current, ghosts, stepIndex }) => {
   const currentVec = useMemo(() => blochVector(current), [current]);
   const ghostVecs = useMemo(() => ghosts.map(g => blochVector(g)), [ghosts]);
   return (
@@ -66,7 +67,7 @@ export const BlochSphere: React.FC<BlochSphereProps> = ({ current, ghosts }) => 
       {ghostVecs.map((v, i) => (
         <Arrow key={`${i}-${v.x.toFixed(3)}-${v.y.toFixed(3)}-${v.z.toFixed(3)}`} vec={v} color="#00b4ff" opacity={0.3} label={formatLabel(i, ghosts[i])} />
       ))}
-      <Arrow vec={currentVec} color="#ff0000" label={formatLabel(ghostVecs.length, current)} />
+      <Arrow vec={currentVec} color="#ff0000" label={formatLabel(stepIndex, current)} />
       <OrbitControls />
     </Canvas>
   );
